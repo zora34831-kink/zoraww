@@ -15,6 +15,8 @@ const execFileAsync = promisify(execFile);
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || '';
+const API_TOKEN = process.env.API_TOKEN || '';
+const DASHBOARD_ORIGIN = 'https://zoraww.vercel.app';
 const DATA_DIR = path.resolve('data');
 const AUTH_DIR = path.resolve('auth_info');
 const TMP_DIR = path.resolve('tmp');
@@ -24,11 +26,31 @@ if (!DASHBOARD_PASSWORD || DASHBOARD_PASSWORD.length < 16) {
   console.error('Set DASHBOARD_PASSWORD to a random value of at least 16 characters in .env');
   process.exit(1);
 }
+if (!API_TOKEN || API_TOKEN.length < 32) {
+  console.error('Set API_TOKEN to a random value of at least 32 characters in .env');
+  process.exit(1);
+}
 
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin === DASHBOARD_ORIGIN || origin === 'http://localhost:3000') {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  }
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
 app.use(express.json({ limit: '1mb' }));
 app.use((req, res, next) => {
   if (req.path === '/health') return next();
   const header = req.headers.authorization || '';
+  if (req.path.startsWith('/api/')) {
+    const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+    if (token !== API_TOKEN) return res.status(401).json({ error: 'API token tidak valid.' });
+    return next();
+  }
   const [scheme, encoded] = header.split(' ');
   if (scheme !== 'Basic' || !encoded) {
     res.setHeader('WWW-Authenticate', 'Basic realm="ZORAWW Dashboard"');
