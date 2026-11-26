@@ -6,9 +6,9 @@ WhatsApp group bot berbasis Node.js, Baileys, dan dashboard web.
 - Dashboard status bot, statistik, log, pairing WhatsApp, dan daftar grup.
 - Perintah grup: `.menu`, `.ping`, `.cekid`, `.infogc`, `.listadmin`, `.tagall`, `.hidetag`, `.kick`, `.promote`, `.demote`, `.open`, `.close`, `.resetlink`.
 - Moderasi per grup: `.welcome on/off`, `.antilink on/off`, `.antispam on/off`.
-- Media: `.sticker`/`.s` untuk foto atau video, `.toimg` untuk mengubah sticker menjadi gambar, `.tomp3` untuk audio/video menjadi MP3.
+- Media: `.sticker`/`.s` untuk foto atau video, `.toimg` untuk mengubah sticker menjadi gambar, `.tomp3` untuk audio/video menjadi MP3, `.stcaudio` untuk mengubah audio/video menjadi voice note maksimal 30 detik.
 
-Catatan: sticker WhatsApp standar tidak mendukung audio yang bisa diputar. Perintah `.stcaudio` belum tersedia pada versi ini; audio harus dikirim sebagai voice note/audio terpisah. Baileys adalah library tidak resmi dan penggunaan dapat berisiko pembatasan akun.
+Catatan: sticker WhatsApp standar tidak mendukung audio yang bisa diputar. `.stcaudio` mengirim voice note terpisah, bukan sticker bersuara. Baileys adalah library tidak resmi dan penggunaan dapat berisiko pembatasan akun.
 
 ## Persyaratan
 Ubuntu VPS, Node.js 20+, FFmpeg.
