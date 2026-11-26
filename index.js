@@ -36,7 +36,7 @@ app.use((req, res, next) => {
   if (origin === DASHBOARD_ORIGIN || origin === 'http://localhost:3000') {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Vary', 'Origin');
-    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, Bypass-Tunnel-Reminder');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   }
   if (req.method === 'OPTIONS') return res.sendStatus(204);
