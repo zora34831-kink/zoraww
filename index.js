@@ -150,7 +150,7 @@ async function handleMessage(msg) {
   try {
     switch (command) {
       case '.menu':
-        return reply('ZORAWW BOT\n\nUMUM\n.ping - cek bot\n.menu - daftar perintah\n.infogc - info grup\n.cekid - ID chat\n\nADMIN GRUP\n.tagall - tag anggota\n.hidetag teks - tag tanpa daftar nama\n.kick @user\n.promote @user\n.demote @user\n.open / .close\n.resetlink\n.welcome on/off\n.antilink on/off\n.antispam on/off\n\nMEDIA\n.sticker / .s - foto/video jadi stiker\n.toimg - stiker jadi gambar\n.tomp3 - audio/video jadi MP3\n\nCatatan: .stcaudio tidak bisa menghasilkan stiker WhatsApp bersuara; format stiker WhatsApp tidak mendukung audio.');
+        return reply('ZORAWW BOT\n\nUMUM\n.ping - cek bot\n.menu - daftar perintah\n.infogc - info grup\n.cekid - ID chat\n\nADMIN GRUP\n.tagall - tag anggota\n.hidetag teks - tag tanpa daftar nama\n.kick @user\n.promote @user\n.demote @user\n.open / .close\n.resetlink\n.welcome on/off\n.antilink on/off\n.antispam on/off\n\nMEDIA\n.sticker / .s - foto/video jadi stiker\n.toimg - stiker jadi gambar\n.tomp3 - audio/video jadi MP3\n.stcaudio - audio/video jadi voice note (maks 30 detik)\n\nCatatan: sticker WhatsApp standar tidak bisa memuat audio. .stcaudio mengirim voice note terpisah.');
       case '.ping':
         return reply('Pong! ZORAWW aktif.');
       case '.cekid':
@@ -253,8 +253,21 @@ async function handleMessage(msg) {
         } finally { fs.rmSync(input, { force: true }); fs.rmSync(output, { force: true }); }
         return;
       }
-      case '.stcaudio':
-        return reply('WhatsApp tidak mendukung stiker normal yang bisa diputar sebagai audio. Gunakan .tomp3 untuk konversi audio, atau .sticker untuk stiker gambar.');
+      case '.stcaudio': {
+        const m = unwrapMessage(msg.message);
+        const quoted = m.extendedTextMessage?.contextInfo?.quotedMessage;
+        const source = m.audioMessage || m.videoMessage || quoted?.audioMessage || quoted?.videoMessage;
+        if (!source) return reply('Kirim atau balas audio/video lalu ketik .stcaudio');
+        const type = source.mimetype?.startsWith('video/') ? 'video' : 'audio';
+        const input = path.join(TMP_DIR, Date.now() + (type === 'video' ? '.mp4' : '.bin'));
+        const output = input + '.ogg';
+        fs.writeFileSync(input, await downloadMedia(source, type));
+        try {
+          await execFileAsync('ffmpeg', ['-y', '-i', input, '-t', '30', '-vn', '-ac', '1', '-ar', '48000', '-c:a', 'libopus', '-b:a', '32k', output]);
+          await sock.sendMessage(jid, { audio: fs.readFileSync(output), mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: msg });
+        } finally { fs.rmSync(input, { force: true }); fs.rmSync(output, { force: true }); }
+        return;
+      }
       default:
         return;
     }
