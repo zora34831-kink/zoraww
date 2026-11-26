@@ -323,6 +323,20 @@ async function startBot() {
     if (type !== 'notify') return;
     for (const msg of messages) await handleMessage(msg);
   });
+  sock.ev.on('group-participants.update', async update => {
+    try {
+      if (update.action !== 'add' || !setting(update.id).welcome || !connected) return;
+      const meta = await sock.groupMetadata(update.id);
+      const mentions = update.participants || [];
+      if (!mentions.length) return;
+      await sock.sendMessage(update.id, {
+        text: 'Selamat datang di *' + meta.subject + '*!\nSilakan baca deskripsi dan aturan grup ya.',
+        mentions
+      });
+    } catch (error) {
+      log('Welcome event error: ' + error.message);
+    }
+  });
 }
 
 app.get('/api/status', (_req, res) => res.json({ connected, pairingBusy, pairCode: latestPairCode, stats, memory: Math.round(process.memoryUsage().rss / 1024 / 1024), uptime: Math.floor(process.uptime()) }));
