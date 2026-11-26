@@ -1,29 +1,68 @@
 # ZORAWW
 
-WhatsApp group bot berbasis Node.js, Baileys, dan dashboard web.
+WhatsApp group bot Node.js + Baileys dengan dashboard web.
 
-## Fitur saat ini
-- Dashboard status bot, statistik, log, pairing WhatsApp, dan daftar grup.
-- Perintah grup: `.menu`, `.ping`, `.cekid`, `.infogc`, `.listadmin`, `.tagall`, `.hidetag`, `.kick`, `.promote`, `.demote`, `.open`, `.close`, `.resetlink`.
-- Moderasi per grup: `.welcome on/off`, `.antilink on/off`, `.antispam on/off`.
-- Media: `.sticker`/`.s` untuk foto atau video, `.toimg` untuk mengubah sticker menjadi gambar, `.tomp3` untuk audio/video menjadi MP3, `.stcaudio` untuk mengubah audio/video menjadi voice note maksimal 30 detik.
+## Fitur
+- Dashboard status bot, statistik, log, pairing code, dan daftar grup.
+- Perintah: `.menu`, `.ping`, `.cekid`, `.infogc`, `.listadmin`, `.tagall`, `.hidetag`, `.kick`, `.promote`, `.demote`, `.open`, `.close`, `.resetlink`.
+- Pengaturan grup: `.welcome on/off`, `.antilink on/off`, `.antispam on/off`.
+- Media: `.sticker` / `.s`, `.toimg`, `.tomp3`, `.stcaudio` (maksimal 30 detik).
 
-Catatan: sticker WhatsApp standar tidak mendukung audio yang bisa diputar. `.stcaudio` mengirim voice note terpisah, bukan sticker bersuara. Baileys adalah library tidak resmi dan penggunaan dapat berisiko pembatasan akun.
+Catatan: sticker WhatsApp standar tidak mendukung audio yang bisa diputar. `.stcaudio` mengirim voice note terpisah. Baileys merupakan library tidak resmi; gunakan dengan memahami risiko pembatasan akun dan aturan WhatsApp.
 
-## Persyaratan
-Ubuntu VPS, Node.js 20+, FFmpeg.
+## Jalankan di Termux (Android)
+1. Pasang Node.js, Git, dan FFmpeg:
+   ```bash
+   pkg update -y && pkg upgrade -y
+   pkg install nodejs-lts git ffmpeg -y
+   ```
+2. Clone repo (atau masuk ke folder repo yang sudah ada):
+   ```bash
+   git clone https://github.com/zora34831-kink/zoraww.git
+   cd zoraww
+   npm install
+   ```
+3. Buat file rahasia `.env` di Termux. Jangan kirim file ini ke siapa pun:
+   ```bash
+   cat > .env <<'EOF'
+   PORT=3000
+   PREFIX=.
+   DASHBOARD_PASSWORD=GANTI_PASSWORD_ACAK_MINIMAL_16_KARAKTER
+   API_TOKEN=GANTI_TOKEN_ACAK_MINIMAL_32_KARAKTER
+   EOF
+   ```
+   Ganti kedua nilai contoh dengan rahasia acak milik sendiri. Jangan commit `.env` ke GitHub.
+4. Jalankan bot:
+   ```bash
+   npm start
+   ```
+   Biarkan proses ini tetap berjalan. Cek lokal dari tab Termux kedua dengan `curl http://127.0.0.1:3000/health`.
 
-## Instalasi
-```bash
-sudo apt update && sudo apt install -y ffmpeg
-npm install
-cp .env.example .env
-nano .env
-npm start
-```
-Isi `DASHBOARD_PASSWORD` dengan password acak minimal 16 karakter. Dashboard menggunakan HTTP Basic Auth; username bebas, password sesuai `.env`. Untuk akses internet, wajib pasang HTTPS reverse proxy dan firewall. Jangan unggah `.env`, `auth_info/`, `data/`, atau sesi WhatsApp ke GitHub.
+## Sambungkan dashboard Vercel ke Termux
+1. Pastikan bot/server aktif pada port 3000.
+2. Di tab Termux kedua, jalankan:
+   ```bash
+   cd zoraww
+   npm run tunnel
+   ```
+3. Localtunnel akan menampilkan alamat HTTPS publik. Masukkan alamat itu di bagian **Koneksi server bot** pada dashboard `https://zoraww.vercel.app`.
+4. Masukkan nilai `API_TOKEN` yang ada di file `.env`, lalu tekan **Simpan koneksi**.
 
-## Catatan
-- Folder `auth_info/` berisi sesi WhatsApp pribadi. Backup dengan aman.
-- Jangan bagikan pairing code atau password dashboard.
-- Gunakan bot hanya di grup yang mengizinkan otomatisasi dan hormati aturan WhatsApp.
+Alamat tunnel gratis dapat berubah saat tunnel dimulai ulang. Jika berubah, masukkan alamat terbaru pada dashboard. Jangan bagikan URL tunnel dan API token secara publik. API dilindungi Bearer Token dan menerima permintaan browser dari domain dashboard resmi.
+
+## Vercel
+Untuk frontend statis, atur:
+- Framework Preset: Other
+- Root Directory: .
+- Build Command: kosong
+- Output Directory: public
+- Install Command: kosong
+
+Vercel hanya meng-host dashboard statis. Bot Baileys harus tetap berjalan pada Termux/perangkat atau server yang selalu aktif.
+
+## Keamanan dan sesi
+- `DASHBOARD_PASSWORD` melindungi halaman dashboard lokal.
+- `API_TOKEN` mengamankan API yang diakses dashboard Vercel.
+- Jangan unggah `.env`, `auth_info/`, `data/`, atau pairing code ke GitHub.
+- Folder `auth_info/` berisi sesi WhatsApp. Jangan hapus jika ingin mempertahankan sesi yang sudah tertaut.
+- Tutup akses tunnel jika sudah tidak digunakan. Untuk aktif 24 jam, Android harus tetap menyala, tersambung internet, dan tidak membatasi Termux di latar belakang.
