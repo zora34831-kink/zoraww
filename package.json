@@ -6,7 +6,8 @@
   "description": "ZORAWW WhatsApp bot",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "tunnel": "npx --yes localtunnel --port 3000"
   },
   "engines": {
     "node": ">=20"
